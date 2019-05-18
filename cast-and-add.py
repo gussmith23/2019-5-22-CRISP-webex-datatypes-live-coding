@@ -28,3 +28,21 @@ z = tvm.nd.empty(Z.shape, dtype=Z.dtype, ctx=context)
 # Run the program.
 built_program(x, y, z)
 print("z:\t\t\t\t{}".format(z))
+
+# Now, we will do the same, but we will use a custom datatype for our
+# intermediate computation.
+
+# The basic program, but with casts to a custom datatype.
+# Note how we specify the custom datatype: we indicate it using the special
+# `custom[...]` syntax.
+# Additionally, note the "16" after the datatype: this is the bitwidth of the
+# custom datatype. This tells TVM that each instance of bfloat is 16 bits wide.
+Z = topi.cast(
+    topi.cast(X, dtype="custom[bfloat]16") +
+    topi.cast(Y, dtype="custom[bfloat]16"),
+    dtype="float32")
+
+# Initially, this will error out, saying:
+# "TVMError: Check failed: name_to_code_.find(type_name) != name_to_code_.end():
+#  Type name bfloat not registered"
+# Thus, we need to register the datatype first!

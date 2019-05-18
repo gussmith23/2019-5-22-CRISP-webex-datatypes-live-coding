@@ -21,3 +21,6 @@ x = tvm.nd.array(np.random.rand(3).astype("float32"), ctx=context)
 y = tvm.nd.array(np.random.rand(3).astype("float32"), ctx=context)
 print("x:\t\t\t\t{}".format(x))
 print("y:\t\t\t\t{}".format(y))
+
+# This will hold our output.
+z = tvm.nd.empty(Z.shape, dtype=Z.dtype, ctx=context)

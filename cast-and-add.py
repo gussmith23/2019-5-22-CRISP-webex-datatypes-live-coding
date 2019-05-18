@@ -32,6 +32,11 @@ print("z:\t\t\t\t{}".format(z))
 # Now, we will do the same, but we will use a custom datatype for our
 # intermediate computation.
 
+# Register the custom datatype with tvm.
+# Here, we register bfloats with a type code of 129. Currently, the type codes
+# are chosen purely manually.
+tvm.datatype.register("bfloat", 129)
+
 # The basic program, but with casts to a custom datatype.
 # Note how we specify the custom datatype: we indicate it using the special
 # `custom[...]` syntax.
@@ -41,8 +46,3 @@ Z = topi.cast(
     topi.cast(X, dtype="custom[bfloat]16") +
     topi.cast(Y, dtype="custom[bfloat]16"),
     dtype="float32")
-
-# Initially, this will error out, saying:
-# "TVMError: Check failed: name_to_code_.find(type_name) != name_to_code_.end():
-#  Type name bfloat not registered"
-# Thus, we need to register the datatype first!

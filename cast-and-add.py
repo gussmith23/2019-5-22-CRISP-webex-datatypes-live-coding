@@ -46,3 +46,17 @@ Z = topi.cast(
     topi.cast(X, dtype="custom[bfloat]16") +
     topi.cast(Y, dtype="custom[bfloat]16"),
     dtype="float32")
+
+# Compile for LLVM (schedule, lower, and build)
+schedule = tvm.create_schedule([Z.op])
+lowered_func = tvm.lower(schedule, [X, Y, Z])
+# Here, we manually lower custom datatypes. Soon, this will be incorporated
+# directly into the TVM lower and build process.
+lowered_func = tvm.ir_pass.LowerCustomDatatypes(lowered_func, target)
+built_program = tvm.build(lowered_func, target=target)
+
+# This will cause the following error:
+# "TVMError: Check failed: lower: Cast lowering function for target llvm
+#  destination type 129 source type 2 not found"
+# This means that the custom datatype lowerer does not know how to lower Casts
+# from float (type 2) to bfloat (type 129). So we need to tell it how!

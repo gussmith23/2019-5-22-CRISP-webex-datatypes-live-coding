@@ -37,6 +37,20 @@ print("z:\t\t\t\t{}".format(z))
 # are chosen purely manually.
 tvm.datatype.register("bfloat", 129)
 
+# Register lowering functions. The first argument of register_op is a function
+# whichperforms the lowering for this specific op. That is, it takes an op (e.g.
+# a Cast) and returns a new op which is equivalent, but does not use the custom
+# datatype.
+# We provide a convenience function, create_lower_func(), which simply lowers
+# the op to a Call to a function of the provided name, e.g. BFloat16Add_wrapper.
+tvm.datatype.register_op(tvm.datatype.create_lower_func("FloatToBFloat16_wrapper"),
+                         "Cast", target, "bfloat", "float")
+tvm.datatype.register_op(tvm.datatype.create_lower_func("BFloat16ToFloat_wrapper"),
+                         "Cast", target, "float", "bfloat")
+tvm.datatype.register_op(tvm.datatype.create_lower_func("BFloat16Add_wrapper"),
+                         "Add", target, "bfloat")
+
+
 # The basic program, but with casts to a custom datatype.
 # Note how we specify the custom datatype: we indicate it using the special
 # `custom[...]` syntax.
@@ -55,8 +69,3 @@ lowered_func = tvm.lower(schedule, [X, Y, Z])
 lowered_func = tvm.ir_pass.LowerCustomDatatypes(lowered_func, target)
 built_program = tvm.build(lowered_func, target=target)
 
-# This will cause the following error:
-# "TVMError: Check failed: lower: Cast lowering function for target llvm
-#  destination type 129 source type 2 not found"
-# This means that the custom datatype lowerer does not know how to lower Casts
-# from float (type 2) to bfloat (type 129). So we need to tell it how!

@@ -69,3 +69,9 @@ lowered_func = tvm.lower(schedule, [X, Y, Z])
 lowered_func = tvm.ir_pass.LowerCustomDatatypes(lowered_func, target)
 built_program = tvm.build(lowered_func, target=target)
 
+
+# Finally, create a new array to hold the output and run the program.
+z_bfloat = tvm.nd.empty(Z.shape, dtype=Z.dtype, ctx=context)
+
+built_program(x, y, z_bfloat)
+print("z_bfloat:\t{}".format(z_bfloat))

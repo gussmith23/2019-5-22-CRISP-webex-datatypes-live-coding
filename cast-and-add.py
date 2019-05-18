@@ -24,3 +24,7 @@ print("y:\t\t\t\t{}".format(y))
 
 # This will hold our output.
 z = tvm.nd.empty(Z.shape, dtype=Z.dtype, ctx=context)
+
+# Run the program.
+built_program(x, y, z)
+print("z:\t\t\t\t{}".format(z))
